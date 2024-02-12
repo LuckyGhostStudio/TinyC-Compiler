@@ -1,2 +1,1 @@
-# TinyC-Compiler
-A Sample Compiler of Tiny C
+# A TinyC Compiler Based on C/C++.
