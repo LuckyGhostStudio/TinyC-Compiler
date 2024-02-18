@@ -4,13 +4,14 @@
 
 using namespace Compiler;
 
-int main()
+int main(const char* argv)
 {
-	CompileState result = CompileFile("../TestFiles/test.c", "../TestFiles/test", 0);
-	if (result == CompileState::FileCompiledOK) {
+	CompileState state = CompileFile("TestFiles\\test.c", "TestFiles\\test", 0);	// ±àÒëÎÄ¼ş
+
+	if (state == CompileState::Successfully) {
 		std::cout << "Everything Compiled Fine\n";
 	}
-	else if (result == CompileState::FailedWithErrors) {
+	else if (state == CompileState::FailedWithErrors) {
 		std::cout << "Compile Faild\n";
 	}
 	else {
