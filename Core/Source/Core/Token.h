@@ -50,5 +50,11 @@ namespace Compiler
 
 		Token() {}
 		Token(TokenType type, unsigned long long number) : m_Type(type), m_LonglongNumber(number) {}
+		Token(TokenType type, const char* str) : m_Type(type), m_StringValue(str)
+		{
+			char* temp = new char[strlen(str) + 1];
+			strcpy(temp, str);
+			m_StringValue = temp;
+		}
 	};
 }

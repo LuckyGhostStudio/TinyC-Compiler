@@ -111,6 +111,14 @@ namespace Compiler
 		Token* GetNumberToken();
 
 		/// <summary>
+		/// 获取 字符串 Token
+		/// </summary>
+		/// <param name="startDelim">前分隔符</param>
+		/// <param name="endDelim">后分隔符</param>
+		/// <returns>字符串 Token</returns>
+		Token* GetStringToken(char startDelim, char endDelim);
+
+		/// <summary>
 		/// 获取下一个Token
 		/// </summary>
 		/// <returns>Token</returns>

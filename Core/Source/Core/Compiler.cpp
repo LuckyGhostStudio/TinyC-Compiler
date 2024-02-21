@@ -41,9 +41,19 @@ namespace Compiler
 			return CompileState::FailedWithErrors;
 		}
 
+		//// TODO: test...
+		//char c;
+		//while ((c = lexer->NextChar()) != EOF) {
+		//	std::cout << c;
+		//}
+
 		// 词法分析失败
 		if (lexer->LexicalAnalysis() != LexicalAnalysisState::Successfully) {
 			return CompileState::FailedWithErrors;
+		}
+
+		for (int i = 0; i < lexer->GetTokens().size(); i++) {
+			std::cout << lexer->GetTokens()[i]->m_LongNumber << std::endl;
 		}
 
 		// TODO: 语法分析

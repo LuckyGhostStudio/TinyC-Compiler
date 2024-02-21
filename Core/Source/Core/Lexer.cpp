@@ -72,7 +72,7 @@ namespace Compiler
 	{
 		m_Buffer.clear();
 
-		// 读取连续的 0-9 的字符
+		// 读取连续的 0-9 的字符到Buffer
 		for (char c = PeekChar(); c >= '0' && c <= '9'; c = PeekChar()) {
 			m_Buffer += c;
 			NextChar();
@@ -96,6 +96,24 @@ namespace Compiler
 		return GetNumberTokenForValue(ReadNumber());
 	}
 
+	Token* Lexer::GetStringToken(char startDelim, char endDelim)
+	{
+		m_Buffer.clear();
+		NextChar();
+
+		// 读取 startDelim 和 endDelim 之间的字符
+		for (char c = NextChar(); c != endDelim && c != EOF; c = NextChar()) {
+			if (c == '\\') {
+				// TODO: 处理 \ 符号，例如 \n
+				continue;
+			}
+
+			m_Buffer += c;
+		}
+
+		return CreateToken(new Token(TokenType::String, m_Buffer.c_str()));
+	}
+
 	Token* Lexer::GetNextToken()
 	{
 		Token* token = nullptr;
@@ -113,11 +131,14 @@ namespace Compiler
 			case '7':
 			case '8':
 			case '9':
-				token = GetNumberToken();	// 返回 Number Token
+				token = GetNumberToken();			// 返回 Number Token
+				break;
+			case '"':
+				token = GetStringToken('"', '"');	// 返回 String Token
 				break;
 			case ' ':
 			case '\t':
-				token = HandleWhiteSpace();		// 处理空白字符返回下一个Token
+				token = HandleWhiteSpace();			// 处理空白字符返回下一个Token
 				break;
 			/* 文件结尾 */
 			case EOF:
