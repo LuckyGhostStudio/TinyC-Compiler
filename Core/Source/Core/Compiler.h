@@ -1,7 +1,6 @@
 #pragma once
 
 #include "CompileProcess.h"
-#include "Lexer.h"
 
 namespace Compiler
 {
@@ -13,6 +12,22 @@ namespace Compiler
 		Successfully,		// 编译成功
 		FailedWithErrors,	// 编译错误
 	};
+
+	/// <summary>
+	/// 编译器错误
+	/// </summary>
+	/// <param name="compiler">编译过程</param>
+	/// <param name="message">错误信息</param>
+	/// <param name="">其他参数</param>
+	void CompilerError(CompileProcess* compiler, const char* message, ...);
+
+	/// <summary>
+	/// 编译器警告
+	/// </summary>
+	/// <param name="compiler">编译过程</param>
+	/// <param name="message">警告信息</param>
+	/// <param name="">其他参数</param>
+	void CompilerWarning(CompileProcess* compiler, const char* message, ...);
 
 	/// <summary>
 	/// 编译文件

@@ -1,7 +1,33 @@
 #include "Compiler.h"
+#include "Lexer.h"
+
+#include <stdarg.h>
 #include <iostream>
+
 namespace Compiler
 {
+	void CompilerError(CompileProcess* compiler, const char* message, ...)
+	{
+		va_list args;	// 参数列表
+		va_start(args, message);
+		vfprintf(stderr, message, args);
+		va_end(args);
+
+		fprintf(stderr, " On Line %i, Column %i in File %s \n", compiler->m_CharPos.Line, compiler->m_CharPos.Column, compiler->m_CharPos.FileName.c_str());
+	
+		exit(-1);
+	}
+
+	void CompilerWarning(CompileProcess* compiler, const char* message, ...)
+	{
+		va_list args;	// 参数列表
+		va_start(args, message);
+		vfprintf(stderr, message, args);
+		va_end(args);
+
+		fprintf(stderr, " On Line %i, Column %i in File %s \n", compiler->m_CharPos.Line, compiler->m_CharPos.Column, compiler->m_CharPos.FileName.c_str());
+	}
+
 	CompileState CompileFile(const char* fileName, const char* outFileName, int flags)
 	{
 		CompileProcess* compiler = new CompileProcess(fileName, outFileName, flags);	// 创建编译过程
@@ -13,12 +39,6 @@ namespace Compiler
 		Lexer* lexer = new Lexer(compiler, nullptr);	// 词法分析器
 		if (!lexer) {
 			return CompileState::FailedWithErrors;
-		}
-
-		// TODO: test...
-		char c;
-		while ((c = lexer->NextChar()) != EOF) {
-			std::cout << c;
 		}
 
 		// 词法分析失败

@@ -28,6 +28,9 @@ namespace Compiler
 		/* 标志 */
 		int m_Flags;
 
+		/* Token 位置 */
+		CharPos m_Pos;
+
 		/* Token 值 */
 		union
 		{
@@ -44,5 +47,8 @@ namespace Compiler
 
 		/* 括号之间的字符串值（调试用）：(10+2+3) */
 		std::string m_BetweenBrackets;
+
+		Token() {}
+		Token(TokenType type, unsigned long long number) : m_Type(type), m_LonglongNumber(number) {}
 	};
 }

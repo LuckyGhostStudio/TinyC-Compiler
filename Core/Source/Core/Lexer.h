@@ -24,8 +24,10 @@ namespace Compiler
 	class Lexer
 	{
 	private:
-		std::vector<Token> m_Tokens;					// Token序列
+		std::vector<Token*> m_Tokens;					// Token序列
 		void* m_PrivateData;							// Lexer不能理解的私人数据，使用Lexer的人能够理解
+		Token m_TempToken;
+		std::string m_Buffer;
 	public:
 		CharPos m_CharPos;								// 字符位置信息
 		CompileProcess* m_Compiler;						// 编译器
@@ -36,9 +38,9 @@ namespace Compiler
 		Lexer(CompileProcess* compiler, void* privateData);
 
 		inline void* GetPrivateData() { return m_PrivateData; }
-		inline std::vector<Token>& GetTokens() { return m_Tokens; }
+		inline std::vector<Token*>& GetTokens() { return m_Tokens; }
 
-		void ClearTokens();
+		inline void ClearTokens() { m_Tokens.clear(); }
 
 		/// <summary>
 		/// 返回下一个字符并从文件输入流弹出
@@ -63,5 +65,55 @@ namespace Compiler
 		/// </summary>
 		/// <returns>词法分析状态</returns>
 		LexicalAnalysisState LexicalAnalysis();
+
+		/// <summary>
+		/// 创建 Token
+		/// </summary>
+		/// <param name="token">源token</param>
+		/// <returns>目的token</returns>
+		Token* CreateToken(Token* token);
+
+		/// <summary>
+		/// 返回当前Token序列最后一个Token
+		/// </summary>
+		/// <returns></returns>
+		Token* LastToken() { return !m_Tokens.empty() ? m_Tokens.back() : nullptr; }
+
+		/// <summary>
+		/// 处理空白字符并返回下一个Token
+		/// </summary>
+		/// <returns>下一个Token</returns>
+		Token* HandleWhiteSpace();
+
+		/// <summary>
+		/// 读取 Number 字符串
+		/// </summary>
+		/// <returns>Number字符串</returns>
+		const char* ReadNumberStr();
+
+		/// <summary>
+		/// 读取 long long 无符号 Number
+		/// </summary>
+		/// <returns>long long Number</returns>
+		unsigned long long ReadNumber();
+
+		/// <summary>
+		/// 获取 Number Token 值
+		/// </summary>
+		/// <param name="number">long 值</param>
+		/// <returns>long Number Token</returns>
+		Token* GetNumberTokenForValue(unsigned long number);
+
+		/// <summary>
+		/// 获取 Number Token
+		/// </summary>
+		/// <returns>Number Token</returns>
+		Token* GetNumberToken();
+
+		/// <summary>
+		/// 获取下一个Token
+		/// </summary>
+		/// <returns>Token</returns>
+		Token* GetNextToken();
 	};
 }
