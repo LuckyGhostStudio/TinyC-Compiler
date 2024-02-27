@@ -27,13 +27,13 @@ namespace Compiler
 		std::vector<Token*> m_Tokens;					// Token序列
 		void* m_PrivateData;							// Lexer不能理解的私人数据，使用Lexer的人能够理解
 		Token m_TempToken;
-		std::string m_Buffer;
+		std::string m_TokenBuffer;
 	public:
 		CharPos m_CharPos;								// 字符位置信息
 		CompileProcess* m_Compiler;						// 编译器
 
 		int m_CurrentExpressionCount = 0;				// 当前表达式个数：((50)) 此表达式数有2个
-		std::vector<std::string> m_ParenthesesBuffer;	// 括号缓冲
+		std::string m_ParenthesesBuffer;				// 括号缓冲
 
 		Lexer(CompileProcess* compiler, void* privateData);
 
@@ -58,7 +58,7 @@ namespace Compiler
 		/// 回退字符到文件输入流
 		/// </summary>
 		/// <param name="c">字符</param>
-		void PushChar(char c);
+		void PushChar(/*char c*/);
 
 		/// <summary>
 		/// 进行词法分析
@@ -117,6 +117,29 @@ namespace Compiler
 		/// <param name="endDelim">后分隔符</param>
 		/// <returns>字符串 Token</returns>
 		Token* GetStringToken(char startDelim, char endDelim);
+
+		/// <summary>
+		/// 读取 运算符
+		/// </summary>
+		/// <returns>运算符字符串</returns>
+		const char* ReadOperator();
+
+		/// <summary>
+		/// 新建表达式
+		/// </summary>
+		void NewExpression();
+
+		/// <summary>
+		/// 是否在表达式中
+		/// </summary>
+		/// <returns></returns>
+		bool IsInExpression();
+
+		/// <summary>
+		/// 获取 operator或string Token
+		/// </summary>
+		/// <returns></returns>
+		Token* GetOperatorOrStringToken();
 
 		/// <summary>
 		/// 获取下一个Token

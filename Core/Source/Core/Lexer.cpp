@@ -28,10 +28,11 @@ namespace Compiler
 	{
 		return static_cast<char>(m_Compiler->m_CFile.File.peek());	// 从文件输入流读取一个字符
 	}
-	
-	void Lexer::PushChar(char c)
+
+	void Lexer::PushChar(/*char c*/)
 	{
-		//ungetc(c, m_Compiler->m_CFile.m_File);		// TODO: 回退字符到文件输入流
+		// ungetc(c, m_Compiler->m_CFile.m_File);		// TODO: 回退字符到文件输入流
+		m_Compiler->m_CFile.File.unget();
 	}
 
 	LexicalAnalysisState Lexer::LexicalAnalysis()
@@ -70,15 +71,15 @@ namespace Compiler
 
 	const char* Lexer::ReadNumberStr()
 	{
-		m_Buffer.clear();
+		m_TokenBuffer.clear();
 
 		// 读取连续的 0-9 的字符到Buffer
 		for (char c = PeekChar(); c >= '0' && c <= '9'; c = PeekChar()) {
-			m_Buffer += c;
+			m_TokenBuffer += c;
 			NextChar();
 		}
 
-		return m_Buffer.c_str();
+		return m_TokenBuffer.c_str();
 	}
 
 	unsigned long long Lexer::ReadNumber()
@@ -98,7 +99,7 @@ namespace Compiler
 
 	Token* Lexer::GetStringToken(char startDelim, char endDelim)
 	{
-		m_Buffer.clear();
+		m_TokenBuffer.clear();
 		NextChar();
 
 		// 读取 startDelim 和 endDelim 之间的字符
@@ -108,17 +109,168 @@ namespace Compiler
 				continue;
 			}
 
-			m_Buffer += c;
+			m_TokenBuffer += c;
 		}
 
-		return CreateToken(new Token(TokenType::String, m_Buffer.c_str()));
+		return CreateToken(new Token(TokenType::String, m_TokenBuffer.c_str()));
+	}
+
+	/// <summary>
+	/// 可否被视为单个运算符
+	/// </summary>
+	/// <param name="op">运算符</param>
+	/// <returns></returns>
+	static bool TreatedAsOneOperator(char op)
+	{
+		return op == '(' || op == '[' || op == ',' || op == '.' || op == '*' || op == '?';
+	}
+
+	/// <summary>
+	/// 是单个运算符
+	/// </summary>
+	/// <param name="op">运算符</param>
+	/// <returns></returns>
+	static bool IsSingleOperator(char op)
+	{
+		return op == '+' ||
+			   op == '-' ||
+			   op == '*' ||	// -
+			   op == '/' ||
+			   op == '=' ||
+			   op == '>' ||
+			   op == '<' ||
+			   op == '|' ||
+			   op == '&' ||
+			   op == '!' ||
+			   op == '^' ||
+			   op == '~' ||
+			   op == '%' ||
+			   op == '(' ||	// -
+			   op == '[' ||	// -
+			   op == ',' ||	// -
+			   op == '.' ||	// -
+			   op == '?';	// -
+	}
+
+	/// <summary>
+	/// 运算符是否有效
+	/// </summary>
+	/// <param name="op">运算符</param>
+	/// <returns></returns>
+	static bool OperatorValid(const char* op)
+	{
+		std::string opStr = op;
+		return opStr == "+" ||
+			   opStr == "-" ||
+			   opStr == "*" ||
+			   opStr == "/" ||
+			   opStr == "&" ||
+			   opStr == "|" ||
+			   opStr == "!" ||
+			   opStr == "^" ||
+			   opStr == ">" ||
+			   opStr == "<" ||
+			   opStr == "++" ||
+			   opStr == "--" ||
+			   opStr == "=" ||
+			   opStr == "+=" ||
+			   opStr == "-=" ||
+			   opStr == "*=" ||
+			   opStr == "/=" ||
+			   opStr == ">>" ||
+			   opStr == "<<" ||
+			   opStr == ">=" ||
+			   opStr == "<=" ||
+			   opStr == "&&" ||
+			   opStr == "||" ||
+			   opStr == "!=" ||
+			   opStr == "==" ||
+			   opStr == "(" ||
+			   opStr == "[" ||
+			   opStr == "," ||
+			   opStr == "." ||
+			   opStr == "->" ||
+			   opStr == "..." ||	// TODO delete
+			   opStr == "~" ||
+			   opStr == "?" ||
+			   opStr == "%";
+	}
+
+	const char* Lexer::ReadOperator()
+	{
+		bool singleOperator = true;	// 是否为单个运算符
+		char op = NextChar();
+
+		m_TokenBuffer.clear();
+		m_TokenBuffer += op;
+
+		// 不能被视为单个运算符
+		if (!TreatedAsOneOperator(op)) {
+			op = PeekChar();	// 查看下一个字符
+			if (IsSingleOperator(op)) {
+				m_TokenBuffer += op;
+				NextChar();
+				singleOperator = false;	// 不是单个运算符
+			}
+		}
+
+		// 不是单个运算符
+		if (!singleOperator) {
+			// 是无效运算符
+			if (!OperatorValid(m_TokenBuffer.c_str())) {
+				PushChar();	// 回退一个字符到输入流
+				if (m_TokenBuffer.length() > 0) {
+					m_TokenBuffer.pop_back();
+				}
+			}
+		}
+		else if (!OperatorValid(m_TokenBuffer.c_str())) {
+			CompilerError(m_Compiler, "The operator %s is not valid.", m_TokenBuffer.c_str());	// 无效的运算符
+		}
+
+		return m_TokenBuffer.c_str();
+	}
+
+	void Lexer::NewExpression()
+	{
+		m_CurrentExpressionCount++;
+		if (m_CurrentExpressionCount == 1) {
+			m_ParenthesesBuffer = "";
+		}
+	}
+
+	bool Lexer::IsInExpression()
+	{
+		return m_CurrentExpressionCount > 0;
+	}
+
+	Token* Lexer::GetOperatorOrStringToken()
+	{
+		char op = PeekChar();
+		// #include <...>
+		if (op == '<') {
+			Token* last_token = LastToken();
+			// 是 include 关键字
+			if (last_token->IsKeyword("include")) {
+				return GetStringToken('<', '>');
+			}
+		}
+
+		Token* operatorToken = CreateToken(new Token(TokenType::Operator, ReadOperator()));
+
+		if (op == '(') {
+			// TODO 计算表达式
+			NewExpression();
+		}
+
+		return operatorToken;
 	}
 
 	Token* Lexer::GetNextToken()
 	{
 		Token* token = nullptr;
 
-		char c = PeekChar();	// 读取下一个字符
+		char c = PeekChar();	// 查看下一个字符
 		switch (c) {
 			/* Number */
 			case '0':
@@ -133,11 +285,33 @@ namespace Compiler
 			case '9':
 				token = GetNumberToken();			// 返回 Number Token
 				break;
+			/* String */
 			case '"':
 				token = GetStringToken('"', '"');	// 返回 String Token
 				break;
+			/* Operator */
+			case '+':
+			case '-':
+			case '*':
+			case '>':
+			case '<':
+			case '^':
+			case '%':
+			case '!':
+			case '=':
+			case '~':
+			case '|':
+			case '&':
+			case '(':
+			case '[':
+			case ',':
+			case '.':
+			case '?':
+				token = GetOperatorOrStringToken();
+				break;
 			case ' ':
 			case '\t':
+			case '\n':
 				token = HandleWhiteSpace();			// 处理空白字符返回下一个Token
 				break;
 			/* 文件结尾 */
@@ -146,7 +320,7 @@ namespace Compiler
 				break;
 
 			default:
-				CompilerError(m_Compiler, "Unexpected token");	// 编译器错误
+				CompilerError(m_Compiler, "Unexpected token.");	// 无效的 Token
 				break;
 		}
 

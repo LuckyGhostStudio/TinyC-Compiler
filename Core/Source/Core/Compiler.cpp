@@ -52,9 +52,9 @@ namespace Compiler
 			return CompileState::FailedWithErrors;
 		}
 
-		for (int i = 0; i < lexer->GetTokens().size(); i++) {
-			std::cout << lexer->GetTokens()[i]->m_LongNumber << std::endl;
-		}
+		/*for (int i = 0; i < lexer->GetTokens().size(); i++) {
+			std::cout << lexer->GetTokens()[i]->m_StringValue << std::endl;
+		}*/
 
 		// TODO: Óï·¨·ÖÎö
 

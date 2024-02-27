@@ -56,5 +56,15 @@ namespace Compiler
 			strcpy(temp, str);
 			m_StringValue = temp;
 		}
+
+		/// <summary>
+		/// 是否为关键字
+		/// </summary>
+		/// <param name="value">token 值</param>
+		/// <returns></returns>
+		bool IsKeyword(const char* value)
+		{
+			return m_Type == TokenType::Keyword && m_StringValue == value;
+		}
 	};
 }

@@ -23,6 +23,7 @@ namespace Compiler
 		struct InputFile
 		{
 			std::ifstream File;			// 文件输入流
+			std::string FileBuffer;
 			std::string AbsolutePath;	// 绝对路径
 		} m_CFile;
 
