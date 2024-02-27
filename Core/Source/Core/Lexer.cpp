@@ -14,11 +14,14 @@ namespace Compiler
 	char Lexer::NextChar()
 	{
 		m_Compiler->m_CharPos.Column++;			// 列数+1
+		m_CharPos.Column++;
 		char c = static_cast<char>(m_Compiler->m_CFile.File.get());	// 从文件输入流读取一个字符（读取后该字符从文件流删除）
 		// 当前字符为换行符
 		if (c == '\n') {
 			m_Compiler->m_CharPos.Line++;			// 行数+1
+			m_CharPos.Line++;
 			m_Compiler->m_CharPos.Column = 1;		// 列数重置
+			m_CharPos.Column = 1;
 		}
 
 		return c;
@@ -89,7 +92,7 @@ namespace Compiler
 
 	Token* Lexer::GetNumberTokenForValue(unsigned long number)
 	{
-		return CreateToken(new Token(TokenType::Number, number));
+		return CreateToken(new Token(TokenType::Number, static_cast<unsigned long long>(number)));
 	}
 
 	Token* Lexer::GetNumberToken()
@@ -239,6 +242,14 @@ namespace Compiler
 		}
 	}
 
+	void Lexer::FinishExpression()
+	{
+		m_CurrentExpressionCount--;
+		if (m_CurrentExpressionCount < 0) {
+			CompilerError(m_Compiler, "You closed an expression that you never opened.");
+		}
+	}
+
 	bool Lexer::IsInExpression()
 	{
 		return m_CurrentExpressionCount > 0;
@@ -264,6 +275,17 @@ namespace Compiler
 		}
 
 		return operatorToken;
+	}
+
+	Token* Lexer::GetSymbolToken()
+	{
+		char c = NextChar();
+
+		if (c == ')') {
+			FinishExpression();
+		}
+
+		return CreateToken(new Token(TokenType::Symbol, c));
 	}
 
 	Token* Lexer::GetNextToken()
@@ -308,6 +330,17 @@ namespace Compiler
 			case '.':
 			case '?':
 				token = GetOperatorOrStringToken();
+				break;
+			/* Symbol */
+			case '{':
+			case '}':
+			case ':':
+			case ';':
+			case '#':
+			case '\\':
+			case ')':
+			case ']':
+				token = GetSymbolToken();
 				break;
 			case ' ':
 			case '\t':

@@ -130,6 +130,11 @@ namespace Compiler
 		void NewExpression();
 
 		/// <summary>
+		/// 结束表达式
+		/// </summary>
+		void FinishExpression();
+
+		/// <summary>
 		/// 是否在表达式中
 		/// </summary>
 		/// <returns></returns>
@@ -140,6 +145,12 @@ namespace Compiler
 		/// </summary>
 		/// <returns></returns>
 		Token* GetOperatorOrStringToken();
+
+		/// <summary>
+		/// 获取 symbol Token
+		/// </summary>
+		/// <returns>symbol Token</returns>
+		Token* GetSymbolToken();
 
 		/// <summary>
 		/// 获取下一个Token

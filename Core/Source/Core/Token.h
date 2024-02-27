@@ -49,6 +49,7 @@ namespace Compiler
 		std::string m_BetweenBrackets;
 
 		Token() {}
+		Token(TokenType type, char c) : m_Type(type), m_CharValue(c) {}
 		Token(TokenType type, unsigned long long number) : m_Type(type), m_LonglongNumber(number) {}
 		Token(TokenType type, const char* str) : m_Type(type), m_StringValue(str)
 		{
