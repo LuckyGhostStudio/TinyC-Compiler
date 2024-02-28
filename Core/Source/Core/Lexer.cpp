@@ -305,6 +305,12 @@ namespace Compiler
 		return nullptr;
 	}
 
+	Token* Lexer::GetNewLineToken()
+	{
+		NextChar();
+		return CreateToken(new Token(TokenType::NewLine));
+	}
+
 	Token* Lexer::GetNextToken()
 	{
 		Token* token = nullptr;
@@ -361,8 +367,11 @@ namespace Compiler
 				break;
 			case ' ':
 			case '\t':
-			case '\n':
 				token = HandleWhiteSpace();			// 处理空白字符返回下一个Token
+				break;
+			/* NewLine */
+			case '\n':
+				token = GetNewLineToken();
 				break;
 			/* 文件结尾 */
 			case EOF:

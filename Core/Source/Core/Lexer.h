@@ -165,6 +165,12 @@ namespace Compiler
 		Token* ReadSpecialToken();
 
 		/// <summary>
+		/// 获取 NewLine Token（新的一行\n）
+		/// </summary>
+		/// <returns>NewLine Token</returns>
+		Token* GetNewLineToken();
+
+		/// <summary>
 		/// 获取下一个Token
 		/// </summary>
 		/// <returns>Token</returns>
