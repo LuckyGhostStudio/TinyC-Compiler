@@ -158,6 +158,10 @@ namespace Compiler
 		/// <returns>Identifier 或 Keyword Token</returns>
 		Token* GetIdentifierOrKeyword();
 
+		/// <summary>
+		/// 获取特殊 Token: 标识符或关键字或其他特殊 Token
+		/// </summary>
+		/// <returns></returns>
 		Token* ReadSpecialToken();
 
 		/// <summary>

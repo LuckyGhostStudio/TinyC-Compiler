@@ -3,9 +3,38 @@
 
 #include <cstring>
 #include <ctype.h>
+#include <unordered_set>
 
 namespace Compiler
 {
+	/* 单个运算符 */
+	static std::unordered_set<char> singleOperators = {
+		'+', '-', '/',	'=', '%', '>', '<', '|', '&', '!', '^', '~',
+		'*', '(', '[', ',', '.', '?'
+	};
+
+	/* 有效的运算符 */
+	static std::unordered_set<std::string> validOperators = {
+		"+", "-", "*", "/", "%",
+		"&", "|", "!", "^", "&&", "||", "~", ">>", "<<",
+		">", "<", ">=", "<=", "!=", "==",
+		"++", "--", "=", "+=", "-=", "*=", "/=",
+		"(", "[", ",",
+		".", "->",
+		"...",	// TODO delete
+		"?"
+	};
+
+	/* 支持的关键字 */
+	static std::unordered_set<std::string> keywords = {
+		"unsigned", "signed", "char", "short", "int", "long", "float", "double", "void",
+		"struct", "union", "static", "typedef", "const",
+		"include", "sizeof",
+		"if", "else", "while", "for", "do", "break", "continue", "switch", "case", "default", "goto", "return",
+		"extern", "restrict",
+		"__ignore_typecheck"	// 忽略类型检查
+	};
+
 	Lexer::Lexer(CompileProcess* compiler, void* privateData)
 	{
 		m_Compiler = compiler;
@@ -136,24 +165,7 @@ namespace Compiler
 	/// <returns></returns>
 	static bool IsSingleOperator(char op)
 	{
-		return op == '+' ||
-			   op == '-' ||
-			   op == '*' ||	// -
-			   op == '/' ||
-			   op == '=' ||
-			   op == '>' ||
-			   op == '<' ||
-			   op == '|' ||
-			   op == '&' ||
-			   op == '!' ||
-			   op == '^' ||
-			   op == '~' ||
-			   op == '%' ||
-			   op == '(' ||	// -
-			   op == '[' ||	// -
-			   op == ',' ||	// -
-			   op == '.' ||	// -
-			   op == '?';	// -
+		return singleOperators.find(op) != singleOperators.end();
 	}
 
 	/// <summary>
@@ -161,43 +173,19 @@ namespace Compiler
 	/// </summary>
 	/// <param name="op">运算符</param>
 	/// <returns></returns>
-	static bool OperatorValid(const char* op)
+	static bool OperatorValid(const std::string& op)
 	{
-		std::string opStr = op;
-		return opStr == "+" ||
-			   opStr == "-" ||
-			   opStr == "*" ||
-			   opStr == "/" ||
-			   opStr == "&" ||
-			   opStr == "|" ||
-			   opStr == "!" ||
-			   opStr == "^" ||
-			   opStr == ">" ||
-			   opStr == "<" ||
-			   opStr == "++" ||
-			   opStr == "--" ||
-			   opStr == "=" ||
-			   opStr == "+=" ||
-			   opStr == "-=" ||
-			   opStr == "*=" ||
-			   opStr == "/=" ||
-			   opStr == ">>" ||
-			   opStr == "<<" ||
-			   opStr == ">=" ||
-			   opStr == "<=" ||
-			   opStr == "&&" ||
-			   opStr == "||" ||
-			   opStr == "!=" ||
-			   opStr == "==" ||
-			   opStr == "(" ||
-			   opStr == "[" ||
-			   opStr == "," ||
-			   opStr == "." ||
-			   opStr == "->" ||
-			   opStr == "..." ||	// TODO delete
-			   opStr == "~" ||
-			   opStr == "?" ||
-			   opStr == "%";
+		return validOperators.find(op) != validOperators.end();
+	}
+
+	/// <summary>
+	/// 
+	/// </summary>
+	/// <param name="str"></param>
+	/// <returns></returns>
+	static bool IsKeyword(const std::string& str)
+	{
+		return keywords.find(str) != keywords.end();
 	}
 
 	const char* Lexer::ReadOperator()
@@ -221,14 +209,14 @@ namespace Compiler
 		// 不是单个运算符
 		if (!singleOperator) {
 			// 是无效运算符
-			if (!OperatorValid(m_TokenBuffer.c_str())) {
+			if (!OperatorValid(m_TokenBuffer)) {
 				PushChar();	// 回退一个字符到输入流
 				if (m_TokenBuffer.length() > 0) {
 					m_TokenBuffer.pop_back();
 				}
 			}
 		}
-		else if (!OperatorValid(m_TokenBuffer.c_str())) {
+		else if (!OperatorValid(m_TokenBuffer)) {
 			CompilerError(m_Compiler, "The operator %s is not valid.", m_TokenBuffer.c_str());	// 无效的运算符
 		}
 
@@ -296,6 +284,10 @@ namespace Compiler
 		for (char c = PeekChar(); (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9') || c == '_'; c = PeekChar()) {
 			m_TokenBuffer += c;
 			NextChar();
+		}
+
+		if (IsKeyword(m_TokenBuffer)) {
+			return CreateToken(new Token(TokenType::Keyword, m_TokenBuffer.c_str()));
 		}
 
 		return CreateToken(new Token(TokenType::Identifier, m_TokenBuffer.c_str()));
