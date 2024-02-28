@@ -153,6 +153,14 @@ namespace Compiler
 		Token* GetSymbolToken();
 
 		/// <summary>
+		/// 获取 Identifier 或 Keyword Token
+		/// </summary>
+		/// <returns>Identifier 或 Keyword Token</returns>
+		Token* GetIdentifierOrKeyword();
+
+		Token* ReadSpecialToken();
+
+		/// <summary>
 		/// 获取下一个Token
 		/// </summary>
 		/// <returns>Token</returns>

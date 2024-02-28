@@ -2,6 +2,7 @@
 #include "Compiler.h"
 
 #include <cstring>
+#include <ctype.h>
 
 namespace Compiler
 {
@@ -288,6 +289,30 @@ namespace Compiler
 		return CreateToken(new Token(TokenType::Symbol, c));
 	}
 
+	Token* Lexer::GetIdentifierOrKeyword()
+	{
+		m_TokenBuffer.clear();
+
+		for (char c = PeekChar(); (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9') || c == '_'; c = PeekChar()) {
+			m_TokenBuffer += c;
+			NextChar();
+		}
+
+		return CreateToken(new Token(TokenType::Identifier, m_TokenBuffer.c_str()));
+	}
+
+	Token* Lexer::ReadSpecialToken()
+	{
+		char c = PeekChar();
+
+		// 标识符 或者 关键字
+		if (isalpha(c) || c == '_') {
+			return GetIdentifierOrKeyword();
+		}
+		
+		return nullptr;
+	}
+
 	Token* Lexer::GetNextToken()
 	{
 		Token* token = nullptr;
@@ -353,7 +378,10 @@ namespace Compiler
 				break;
 
 			default:
-				CompilerError(m_Compiler, "Unexpected token.");	// 无效的 Token
+				token = ReadSpecialToken();
+				if (!token) {
+					CompilerError(m_Compiler, "Unexpected token.");	// 无效的 Token
+				}
 				break;
 		}
 
