@@ -147,6 +147,24 @@ namespace Compiler
 		Token* GetOperatorOrStringToken();
 
 		/// <summary>
+		/// 获取 单行注释 Token
+		/// </summary>
+		/// <returns>单行注释 Token</returns>
+		Token* GetOneLineCommentToken();
+
+		/// <summary>
+		/// 获取 多行注释 Token
+		/// </summary>
+		/// <returns>多行注释 Token</returns>
+		Token* GetMultiLineCommentToken();
+
+		/// <summary>
+		/// 处理注释：区分注释和除号运算符
+		/// </summary>
+		/// <returns></returns>
+		Token* HandleComment();
+
+		/// <summary>
 		/// 获取 symbol Token
 		/// </summary>
 		/// <returns>symbol Token</returns>

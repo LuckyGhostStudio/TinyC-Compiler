@@ -1,3 +1,8 @@
-int float token _aaab int9
-50 + 20 * 8
-(9 + 7)
+/*
+	comment
+*/
+int main()
+{
+	float num = 100;	// number
+	return 0;
+}

@@ -266,6 +266,69 @@ namespace Compiler
 		return operatorToken;
 	}
 
+	Token* Lexer::GetOneLineCommentToken()
+	{
+		m_TokenBuffer.clear();
+
+		// 读取一行字符 直到换行或文件结束
+		for (char c = PeekChar(); c != '\n' && c != EOF; c = PeekChar()) {
+			m_TokenBuffer += c;
+			NextChar();
+		}
+		return CreateToken(new Token(TokenType::Comment, m_TokenBuffer.c_str()));;
+	}
+
+	Token* Lexer::GetMultiLineCommentToken()
+	{
+		m_TokenBuffer.clear();
+		char c = 0;
+
+		while (true) {
+			// 读取一行字符 直到*或文件结束
+			for (c = PeekChar(); c != '*' && c != EOF; c = PeekChar()) {
+				m_TokenBuffer += c;
+				NextChar();
+			}
+			// 注释没有结束 文件结束
+			if (c == EOF) {
+				CompilerError(m_Compiler, "You did not close this multi comment.");
+			}
+			else if (c == '*') {
+				NextChar();
+				// 注释结束
+				if (PeekChar() == '/') {
+					NextChar();
+					break;
+				}
+			}
+		}
+
+		return CreateToken(new Token(TokenType::Comment, m_TokenBuffer.c_str()));;;
+	}
+
+	Token* Lexer::HandleComment()
+	{
+		char c = PeekChar();
+		// 开始注释
+		if (c == '/') {
+			NextChar();
+			// 单行注释
+			if (PeekChar() == '/') {
+				NextChar();
+				return GetOneLineCommentToken();
+			}
+			// 多行注释
+			else if (PeekChar() == '*') {
+				NextChar();
+				return GetMultiLineCommentToken();
+			}
+			// 除号 返回输入流
+			PushChar();
+			return GetOperatorOrStringToken();
+		}
+		return nullptr;
+	}
+
 	Token* Lexer::GetSymbolToken()
 	{
 		char c = NextChar();
@@ -316,6 +379,12 @@ namespace Compiler
 		Token* token = nullptr;
 
 		char c = PeekChar();	// 查看下一个字符
+
+		token = HandleComment();	// 处理注释
+		if (token) {
+			return token;
+		}
+
 		switch (c) {
 			/* Number */
 			case '0':
@@ -365,9 +434,10 @@ namespace Compiler
 			case ']':
 				token = GetSymbolToken();
 				break;
+			/* 处理空白字符返回下一个Token */
 			case ' ':
 			case '\t':
-				token = HandleWhiteSpace();			// 处理空白字符返回下一个Token
+				token = HandleWhiteSpace();
 				break;
 			/* NewLine */
 			case '\n':
@@ -377,7 +447,6 @@ namespace Compiler
 			case EOF:
 				// TODO: 已完成词法分析
 				break;
-
 			default:
 				token = ReadSpecialToken();
 				if (!token) {
