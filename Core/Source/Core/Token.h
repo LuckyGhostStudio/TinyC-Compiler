@@ -38,7 +38,7 @@ namespace Compiler
 			const char* m_StringValue;				// string 类型值
 			unsigned int m_IntNumber;				// int 类型值
 			unsigned long m_LongNumber;				// long 类型值
-			unsigned long long m_LonglongNumber;	// longlong 类型值
+			unsigned long long m_LongLongNumber;	// longlong 类型值
 			void* m_Any;							// 其他类型值
 		};
 
@@ -51,7 +51,7 @@ namespace Compiler
 		Token() {}
 		Token(TokenType type) : m_Type(type) {}
 		Token(TokenType type, char c) : m_Type(type), m_CharValue(c) {}
-		Token(TokenType type, unsigned long long number) : m_Type(type), m_LonglongNumber(number) {}
+		Token(TokenType type, unsigned long long number) : m_Type(type), m_LongLongNumber(number) {}
 		Token(TokenType type, const char* str) : m_Type(type), m_StringValue(str)
 		{
 			char* temp = new char[strlen(str) + 1];

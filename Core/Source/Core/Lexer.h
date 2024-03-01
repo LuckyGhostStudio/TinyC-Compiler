@@ -135,6 +135,18 @@ namespace Compiler
 		Token* GetNumberHexadecimalToken();
 
 		/// <summary>
+		/// 验证二进制字符串
+		/// </summary>
+		/// <param name="str">字符串</param>
+		void ValidateBinaryString(const char* str);
+
+		/// <summary>
+		/// 获取 2进制数 Token
+		/// </summary>
+		/// <returns>2进制数 Token</returns>
+		Token* GetNumberBinaryToken();
+
+		/// <summary>
 		/// 获取特殊数字 Token
 		/// </summary>
 		/// <returns>16 和 2进制数 Token</returns>

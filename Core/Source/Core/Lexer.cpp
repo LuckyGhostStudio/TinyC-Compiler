@@ -136,17 +136,46 @@ namespace Compiler
 		return GetNumberTokenForValue(number);
 	}
 
+	void Lexer::ValidateBinaryString(const char* str)
+	{
+		int length = strlen(str);
+		for (int i = 0; i < length; i++) {
+			if (str[i] != '0' && str[i] != '1') {
+				CompilerError(m_Compiler, "This is not a valid binary number.");	// 不是有效的二进制数
+			}
+		}
+	}
+
+	Token* Lexer::GetNumberBinaryToken()
+	{
+		NextChar();		// 跳过 b 字符
+
+		const char* number_str = ReadNumberStr();				// 读取Number字符串
+		ValidateBinaryString(number_str);						// 验证二进制字符串
+		unsigned long number = strtoul(number_str, nullptr, 2);	// 转换为2进制 long
+
+		return GetNumberTokenForValue(number);
+	}
+
 	Token* Lexer::GetSpecialNumberToken()
 	{
 		Token* token = nullptr;
-		Token* lastToken = LastToken();	// 获取最后一个 Token
+		Token* lastToken = LastToken();	// 获取最后一个 Token (0x或0b中的0)
 
-		PopToken();		// 弹出最后一个 Token（0x中的0）
+		// 0不存在 || 不是数字 || Number值不为0
+		if (!lastToken || lastToken->m_Type != TokenType::Number || lastToken->m_LongLongNumber != 0) {
+			return GetIdentifierOrKeyword();	// 标识符或关键字
+		}
+
+		PopToken();		// 弹出最后一个 Token（0x或0b中的0）
 
 		char c = PeekChar();
 		// 16 进制数
 		if (c == 'x') {
 			token = GetNumberHexadecimalToken();	// 获取 16进制数字 Token
+		}
+		else if (c == 'b') {
+			token = GetNumberBinaryToken();			// 获取 2进制数字 Token
 		}
 
 		return token;
@@ -399,6 +428,7 @@ namespace Compiler
 			case '9':
 				token = GetNumberToken();			// 返回 10进制 Number Token
 				break;
+			case 'b':
 			case 'x':
 				token = GetSpecialNumberToken();	// 返回 16或2进制 Number Token
 				break;

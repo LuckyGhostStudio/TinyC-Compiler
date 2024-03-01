@@ -1,4 +1,7 @@
-0xab75
+0b1111g
+0xab75g
+b111
+aaa
 /*
 	comment
 */
