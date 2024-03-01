@@ -1,8 +1,11 @@
 /*
 	comment
 */
-int main()
-{
-	float num = 100;	// number
-	return 0;
-}
+"aaaaa"
+'a' '\n' '\t' '\''
+//int main()
+//{
+//	char c = 'a';	// number
+//	c = '\n';
+//	return 0;
+//}

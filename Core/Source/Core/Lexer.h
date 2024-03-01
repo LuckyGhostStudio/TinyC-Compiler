@@ -61,6 +61,13 @@ namespace Compiler
 		void PushChar(/*char c*/);
 
 		/// <summary>
+		/// 检查 NextChar 是否为 c
+		/// </summary>
+		/// <param name="c"></param>
+		/// <returns></returns>
+		char AssertNextChar(char c);
+
+		/// <summary>
 		/// 进行词法分析
 		/// </summary>
 		/// <returns>词法分析状态</returns>
@@ -187,6 +194,12 @@ namespace Compiler
 		/// </summary>
 		/// <returns>NewLine Token</returns>
 		Token* GetNewLineToken();
+
+		/// <summary>
+		/// 获取 '' Token
+		/// </summary>
+		/// <returns>'' Token</returns>
+		Token* GetQuoteToken();
 
 		/// <summary>
 		/// 获取下一个Token

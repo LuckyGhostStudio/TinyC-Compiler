@@ -4,6 +4,7 @@
 #include <cstring>
 #include <ctype.h>
 #include <unordered_set>
+#include <cassert>
 
 namespace Compiler
 {
@@ -66,6 +67,14 @@ namespace Compiler
 	{
 		// ungetc(c, m_Compiler->m_CFile.m_File);		// TODO: 回退字符到文件输入流
 		m_Compiler->m_CFile.File.unget();
+	}
+
+	char Lexer::AssertNextChar(char c)
+	{
+		char nextC = NextChar();
+		assert(c == nextC);
+
+		return nextC;
 	}
 
 	LexicalAnalysisState Lexer::LexicalAnalysis()
@@ -133,7 +142,7 @@ namespace Compiler
 	Token* Lexer::GetStringToken(char startDelim, char endDelim)
 	{
 		m_TokenBuffer.clear();
-		NextChar();
+		AssertNextChar('"');
 
 		// 读取 startDelim 和 endDelim 之间的字符
 		for (char c = NextChar(); c != endDelim && c != EOF; c = NextChar()) {
@@ -374,6 +383,52 @@ namespace Compiler
 		return CreateToken(new Token(TokenType::NewLine));
 	}
 
+	/// <summary>
+	/// 返回转义字符
+	/// </summary>
+	/// <param name="c">字符</param>
+	/// <returns>转义字符</returns>
+	static char GetEscapedChar(char c)
+	{
+		char co = 0;
+
+		switch (c)
+		{
+			case 'n':
+				co = '\n';
+				break;
+			case '\\':
+				co = '\\';
+				break;
+			case 't':
+				co = '\t';
+				break;
+			case '\'':
+				co = '\'';
+				break;
+		}
+
+		return co;
+	}
+
+	Token* Lexer::GetQuoteToken()
+	{
+		AssertNextChar('\'');
+		char c = NextChar();	// 字符内容
+		// \n
+		if (c == '\\') {
+			c = NextChar();			// c = 'n'
+			c = GetEscapedChar(c);	// 返回转义字符
+		}
+
+		// 下一个字符不是 ' 单引号
+		if (NextChar() != '\'') {
+			CompilerError(m_Compiler, "You opened a quote ' but did not close it with a ' character.");
+		}
+
+		return CreateToken(new Token(TokenType::Number, c));;
+	}
+
 	Token* Lexer::GetNextToken()
 	{
 		Token* token = nullptr;
@@ -402,6 +457,10 @@ namespace Compiler
 			/* String */
 			case '"':
 				token = GetStringToken('"', '"');	// 返回 String Token
+				break;
+			/* Char */
+			case '\'':
+				token = GetQuoteToken();
 				break;
 			/* Operator */
 			case '+':
