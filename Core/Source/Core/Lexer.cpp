@@ -1,41 +1,15 @@
 #include "Lexer.h"
 #include "Compiler.h"
+#include "Utilities.h"
 
 #include <cstring>
 #include <ctype.h>
-#include <unordered_set>
 #include <cassert>
+
+using namespace Utilities;
 
 namespace Compiler
 {
-	/* 单个运算符 */
-	static std::unordered_set<char> singleOperators = {
-		'+', '-', '/',	'=', '%', '>', '<', '|', '&', '!', '^', '~',
-		'*', '(', '[', ',', '.', '?'
-	};
-
-	/* 有效的运算符 */
-	static std::unordered_set<std::string> validOperators = {
-		"+", "-", "*", "/", "%",
-		"&", "|", "!", "^", "&&", "||", "~", ">>", "<<",
-		">", "<", ">=", "<=", "!=", "==",
-		"++", "--", "=", "+=", "-=", "*=", "/=",
-		"(", "[", ",",
-		".", "->",
-		"...",	// TODO delete
-		"?"
-	};
-
-	/* 支持的关键字 */
-	static std::unordered_set<std::string> keywords = {
-		"unsigned", "signed", "char", "short", "int", "long", "float", "double", "void",
-		"struct", "union", "static", "typedef", "const",
-		"include", "sizeof",
-		"if", "else", "while", "for", "do", "break", "continue", "switch", "case", "default", "goto", "return",
-		"extern", "restrict",
-		"__ignore_typecheck"	// 忽略类型检查
-	};
-
 	Lexer::Lexer(CompileProcess* compiler, void* privateData)
 	{
 		m_Compiler = compiler;
@@ -124,6 +98,19 @@ namespace Compiler
 		return m_TokenBuffer.c_str();
 	}
 
+	const char* Lexer::ReadHexNumberStr()
+	{
+		m_TokenBuffer.clear();
+
+		// 读取满足 16进制数 的字符到Buffer
+		for (char c = PeekChar(); IsHexChar(c); c = PeekChar()) {
+			m_TokenBuffer += c;
+			NextChar();
+		}
+
+		return m_TokenBuffer.c_str();
+	}
+
 	unsigned long long Lexer::ReadNumber()
 	{
 		return strtoull(ReadNumberStr(), nullptr, 10);	// 转为 long long 十进制类型
@@ -137,6 +124,32 @@ namespace Compiler
 	Token* Lexer::GetNumberToken()
 	{
 		return GetNumberTokenForValue(ReadNumber());
+	}
+
+	Token* Lexer::GetNumberHexadecimalToken()
+	{
+		NextChar();		// 跳过 x 字符
+
+		const char* number_str = ReadHexNumberStr();				// 读取16进制字符串
+		unsigned long number = strtoul(number_str, nullptr, 16);	// 转换为16进制 long
+
+		return GetNumberTokenForValue(number);
+	}
+
+	Token* Lexer::GetSpecialNumberToken()
+	{
+		Token* token = nullptr;
+		Token* lastToken = LastToken();	// 获取最后一个 Token
+
+		PopToken();		// 弹出最后一个 Token（0x中的0）
+
+		char c = PeekChar();
+		// 16 进制数
+		if (c == 'x') {
+			token = GetNumberHexadecimalToken();	// 获取 16进制数字 Token
+		}
+
+		return token;
 	}
 
 	Token* Lexer::GetStringToken(char startDelim, char endDelim)
@@ -155,46 +168,6 @@ namespace Compiler
 		}
 
 		return CreateToken(new Token(TokenType::String, m_TokenBuffer.c_str()));
-	}
-
-	/// <summary>
-	/// 可否被视为单个运算符
-	/// </summary>
-	/// <param name="op">运算符</param>
-	/// <returns></returns>
-	static bool TreatedAsOneOperator(char op)
-	{
-		return op == '(' || op == '[' || op == ',' || op == '.' || op == '*' || op == '?';
-	}
-
-	/// <summary>
-	/// 是单个运算符
-	/// </summary>
-	/// <param name="op">运算符</param>
-	/// <returns></returns>
-	static bool IsSingleOperator(char op)
-	{
-		return singleOperators.find(op) != singleOperators.end();
-	}
-
-	/// <summary>
-	/// 运算符是否有效
-	/// </summary>
-	/// <param name="op">运算符</param>
-	/// <returns></returns>
-	static bool OperatorValid(const std::string& op)
-	{
-		return validOperators.find(op) != validOperators.end();
-	}
-
-	/// <summary>
-	/// 
-	/// </summary>
-	/// <param name="str"></param>
-	/// <returns></returns>
-	static bool IsKeyword(const std::string& str)
-	{
-		return keywords.find(str) != keywords.end();
 	}
 
 	const char* Lexer::ReadOperator()
@@ -383,34 +356,6 @@ namespace Compiler
 		return CreateToken(new Token(TokenType::NewLine));
 	}
 
-	/// <summary>
-	/// 返回转义字符
-	/// </summary>
-	/// <param name="c">字符</param>
-	/// <returns>转义字符</returns>
-	static char GetEscapedChar(char c)
-	{
-		char co = 0;
-
-		switch (c)
-		{
-			case 'n':
-				co = '\n';
-				break;
-			case '\\':
-				co = '\\';
-				break;
-			case 't':
-				co = '\t';
-				break;
-			case '\'':
-				co = '\'';
-				break;
-		}
-
-		return co;
-	}
-
 	Token* Lexer::GetQuoteToken()
 	{
 		AssertNextChar('\'');
@@ -433,7 +378,7 @@ namespace Compiler
 	{
 		Token* token = nullptr;
 
-		char c = PeekChar();	// 查看下一个字符
+		char c = PeekChar();		// 查看下一个字符
 
 		token = HandleComment();	// 处理注释
 		if (token) {
@@ -452,7 +397,10 @@ namespace Compiler
 			case '7':
 			case '8':
 			case '9':
-				token = GetNumberToken();			// 返回 Number Token
+				token = GetNumberToken();			// 返回 10进制 Number Token
+				break;
+			case 'x':
+				token = GetSpecialNumberToken();	// 返回 16或2进制 Number Token
 				break;
 			/* String */
 			case '"':
@@ -460,7 +408,7 @@ namespace Compiler
 				break;
 			/* Char */
 			case '\'':
-				token = GetQuoteToken();
+				token = GetQuoteToken();			// 返回 Char Token
 				break;
 			/* Operator */
 			case '+':
@@ -480,7 +428,7 @@ namespace Compiler
 			case ',':
 			case '.':
 			case '?':
-				token = GetOperatorOrStringToken();
+				token = GetOperatorOrStringToken();	// 返回 Operator Token
 				break;
 			/* Symbol */
 			case '{':
@@ -491,7 +439,7 @@ namespace Compiler
 			case '\\':
 			case ')':
 			case ']':
-				token = GetSymbolToken();
+				token = GetSymbolToken();			// 返回 Symbol Token
 				break;
 			/* 处理空白字符返回下一个Token */
 			case ' ':
@@ -500,14 +448,14 @@ namespace Compiler
 				break;
 			/* NewLine */
 			case '\n':
-				token = GetNewLineToken();
+				token = GetNewLineToken();			// 返回 换行Token
 				break;
 			/* 文件结尾 */
 			case EOF:
 				// TODO: 已完成词法分析
 				break;
 			default:
-				token = ReadSpecialToken();
+				token = ReadSpecialToken();			// 读取 Identifier 和 Keyword Token
 				if (!token) {
 					CompilerError(m_Compiler, "Unexpected token.");	// 无效的 Token
 				}

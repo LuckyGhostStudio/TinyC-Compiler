@@ -43,6 +43,17 @@ namespace Compiler
 		inline void ClearTokens() { m_Tokens.clear(); }
 
 		/// <summary>
+		/// 返回当前Token序列最后一个Token
+		/// </summary>
+		/// <returns></returns>
+		inline Token* LastToken() { return !m_Tokens.empty() ? m_Tokens.back() : nullptr; }
+
+		/// <summary>
+		/// 弹出最后一个Token
+		/// </summary>
+		inline void PopToken() { m_Tokens.pop_back(); }
+
+		/// <summary>
 		/// 返回下一个字符并从文件输入流弹出
 		/// </summary>
 		/// <returns>下一个字符</returns>
@@ -81,12 +92,6 @@ namespace Compiler
 		Token* CreateToken(Token* token);
 
 		/// <summary>
-		/// 返回当前Token序列最后一个Token
-		/// </summary>
-		/// <returns></returns>
-		Token* LastToken() { return !m_Tokens.empty() ? m_Tokens.back() : nullptr; }
-
-		/// <summary>
 		/// 处理空白字符并返回下一个Token
 		/// </summary>
 		/// <returns>下一个Token</returns>
@@ -97,6 +102,12 @@ namespace Compiler
 		/// </summary>
 		/// <returns>Number字符串</returns>
 		const char* ReadNumberStr();
+
+		/// <summary>
+		/// 读取16进制字符串
+		/// </summary>
+		/// <returns>16进制字符串</returns>
+		const char* ReadHexNumberStr();
 
 		/// <summary>
 		/// 读取 long long 无符号 Number
@@ -116,6 +127,18 @@ namespace Compiler
 		/// </summary>
 		/// <returns>Number Token</returns>
 		Token* GetNumberToken();
+
+		/// <summary>
+		/// 获取 16进制数 Token
+		/// </summary>
+		/// <returns>16进制数 Token</returns>
+		Token* GetNumberHexadecimalToken();
+
+		/// <summary>
+		/// 获取特殊数字 Token
+		/// </summary>
+		/// <returns>16 和 2进制数 Token</returns>
+		Token* GetSpecialNumberToken();
 
 		/// <summary>
 		/// 获取 字符串 Token
