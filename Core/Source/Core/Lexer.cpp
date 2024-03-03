@@ -18,14 +18,23 @@ namespace Compiler
 
 	char Lexer::NextChar()
 	{
-		m_Compiler->m_CharPos.Column++;			// 列数+1
-		m_CharPos.Column++;
 		char c = static_cast<char>(m_Compiler->m_CFile.File.get());	// 从文件输入流读取一个字符（读取后该字符从文件流删除）
+		m_Compiler->m_CharPos.Column++;				// 列数+1
+		
 		// 当前字符为换行符
 		if (c == '\n') {
 			m_Compiler->m_CharPos.Line++;			// 行数+1
-			m_CharPos.Line++;
 			m_Compiler->m_CharPos.Column = 1;		// 列数重置
+		}
+		
+		// 在表达式中
+		if (IsInExpression()) {
+			m_ParenthesesBuffer += c;	// 字符写入括号缓冲
+		}
+
+		m_CharPos.Column++;
+		if (c == '\n') {
+			m_CharPos.Line++;
 			m_CharPos.Column = 1;
 		}
 
@@ -70,6 +79,10 @@ namespace Compiler
 	{
 		memcpy(&m_TempToken, token, sizeof(class Token));
 		m_TempToken.m_Pos = m_CharPos;
+		// 在表达式中
+		if (IsInExpression()) {
+			m_TempToken.m_BetweenBrackets = m_ParenthesesBuffer;	// 设置括号中的表达式字符串
+		}
 
 		return &m_TempToken;
 	}
