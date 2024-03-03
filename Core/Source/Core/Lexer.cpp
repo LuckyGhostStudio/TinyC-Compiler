@@ -129,9 +129,29 @@ namespace Compiler
 		return strtoull(ReadNumberStr(), nullptr, 10);	// 转为 long long 十进制类型
 	}
 
+	NumberType Lexer::GetNumberType(char c)
+	{
+		NumberType type = NumberType::Normal;
+
+		if (c == 'L') {
+			type = NumberType::Long;
+		}
+		else if (c == 'f') {
+			type = NumberType::Float;
+		}
+
+		return type;
+	}
+
 	Token* Lexer::GetNumberTokenForValue(unsigned long number)
 	{
-		return CreateToken(new Token(TokenType::Number, static_cast<unsigned long long>(number)));
+		NumberType numberType = GetNumberType(PeekChar());	// 数值常量的结尾类型标识 123L
+
+		if (numberType != NumberType::Normal) {		// 不是正常数值类型（有结尾标识）
+			NextChar();	// 跳过结尾标识字符
+		}
+
+		return CreateToken(new Token(TokenType::Number, static_cast<unsigned long long>(number), numberType));
 	}
 
 	Token* Lexer::GetNumberToken()

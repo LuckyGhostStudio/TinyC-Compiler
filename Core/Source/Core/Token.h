@@ -19,6 +19,17 @@ namespace Compiler
 		NewLine		// 新行
 	};
 
+	/// <summary>
+	/// 数值类型
+	/// </summary>
+	enum class NumberType
+	{
+		Normal,	//没有结尾标识的数值常量
+		Long,
+		Float,
+		Double
+	};
+
 	class Token
 	{
 	public:
@@ -42,6 +53,12 @@ namespace Compiler
 			void* m_Any;							// 其他类型值
 		};
 
+		/* 数值 */
+		struct Number
+		{
+			NumberType Type;	// 数值常量类型
+		} m_Number;
+
 		/* 当前 Token 和下一个 Token 之间是否存在空白（空格或别的空白符） */
 		bool m_WhiteSpace;
 
@@ -51,7 +68,12 @@ namespace Compiler
 		Token() {}
 		Token(TokenType type) : m_Type(type) {}
 		Token(TokenType type, char c) : m_Type(type), m_CharValue(c) {}
-		Token(TokenType type, unsigned long long number) : m_Type(type), m_LongLongNumber(number) {}
+		Token(TokenType type, unsigned long long value) : m_Type(type), m_LongLongNumber(value) {}
+		Token(TokenType type, unsigned long long value, NumberType numberType) : m_Type(type), m_LongLongNumber(value)
+		{
+			m_Number.Type = numberType;
+		}
+
 		Token(TokenType type, const char* str) : m_Type(type), m_StringValue(str)
 		{
 			char* temp = new char[strlen(str) + 1];

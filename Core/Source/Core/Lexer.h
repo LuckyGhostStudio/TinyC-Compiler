@@ -37,6 +37,8 @@ namespace Compiler
 
 		Lexer(CompileProcess* compiler, void* privateData);
 
+		// TODO: TokenBuildForString
+
 		inline void* GetPrivateData() { return m_PrivateData; }
 		inline std::vector<Token*>& GetTokens() { return m_Tokens; }
 
@@ -114,6 +116,13 @@ namespace Compiler
 		/// </summary>
 		/// <returns>long long Number</returns>
 		unsigned long long ReadNumber();
+
+		/// <summary>
+		/// 根据数字标识字符获取数值类型
+		/// </summary>
+		/// <param name="c">数值标识字符</param>
+		/// <returns>数值类型</returns>
+		NumberType GetNumberType(char c);
 
 		/// <summary>
 		/// 获取 Number Token 值
