@@ -46,6 +46,8 @@ namespace Compiler
 			return CompileState::FailedWithErrors;
 		}
 
+		compiler->m_Tokens = lexer->GetTokens();	// 记录词法分析输出的Token序列
+
 		// TODO: 语法分析
 
 		// TODO: 语义解析

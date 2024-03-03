@@ -1,14 +1,16 @@
 #pragma once
 
-#include "CharPos.h"
-
 #include <fstream>
 #include <string>
+#include <vector>
+
+#include "CharPos.h"
+#include "Token.h"
 
 namespace Compiler
 {
 	/// <summary>
-	/// 编译过程
+	/// 编译过程：存储编译过程中的数据
 	/// </summary>
 	class CompileProcess
 	{
@@ -23,11 +25,12 @@ namespace Compiler
 		struct InputFile
 		{
 			std::ifstream File;			// 文件输入流
-			std::string FileBuffer;
 			std::string AbsolutePath;	// 绝对路径
 		} m_CFile;
 
-		std::ofstream m_OutFile;			// 文件输出流
+		std::vector<Token*> m_Tokens;	// 来自Lexer的Token序列
+
+		std::ofstream m_OutFile;		// 文件输出流
 
 		/// <summary>
 		/// 编译过程
