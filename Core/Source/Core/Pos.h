@@ -5,9 +5,9 @@
 namespace Compiler
 {
 	/// <summary>
-	/// 字符位置信息
+	/// 位置信息
 	/// </summary>
-	struct CharPos
+	struct Pos
 	{
 		int Line = 1;			// 行号
 		int Column = 1;			// 列号

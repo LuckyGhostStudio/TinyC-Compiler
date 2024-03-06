@@ -4,8 +4,9 @@
 #include <string>
 #include <vector>
 
-#include "CharPos.h"
+#include "Pos.h"
 #include "Token.h"
+#include "Node.h"
 
 namespace Compiler
 {
@@ -17,18 +18,21 @@ namespace Compiler
 	public:
 		int m_Flags;		// 文件编译方式的标志
 
-		CharPos m_CharPos;	// 字符位置信息
+		Pos m_CharPos;	// 字符位置信息
 
 		/// <summary>
 		/// 输入文件
 		/// </summary>
 		struct InputFile
 		{
-			std::ifstream File;			// 文件输入流
+			std::ifstream File;			// 文件输入流 .c文件
 			std::string AbsolutePath;	// 绝对路径
 		} m_CFile;
 
-		std::vector<Token*> m_Tokens;	// 来自Lexer的Token序列
+		std::vector<Token*> m_Tokens;	// 来自 Lexer 的 Token序列
+
+		std::vector<Node*> m_Nodes;		// Node 序列
+		std::vector<Node*> m_NodeTrees;	// AST 的实际根
 
 		std::ofstream m_OutFile;		// 文件输出流
 

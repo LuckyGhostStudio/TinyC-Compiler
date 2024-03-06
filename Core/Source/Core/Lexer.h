@@ -3,7 +3,7 @@
 #include <vector>
 #include <string>
 
-#include "CharPos.h"
+#include "Pos.h"
 #include "Token.h"
 #include "CompileProcess.h"
 
@@ -29,7 +29,7 @@ namespace Compiler
 		Token m_TempToken;
 		std::string m_TokenBuffer;
 	public:
-		CharPos m_CharPos;								// 字符位置信息
+		Pos m_CharPos;								// 字符位置信息
 		CompileProcess* m_Compiler;						// 编译器
 
 		int m_CurrentExpressionCount = 0;				// 当前表达式个数：((50)) 此表达式数有2个

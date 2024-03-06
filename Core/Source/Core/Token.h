@@ -1,6 +1,7 @@
 #pragma once
 
 #include <string>
+#include "Pos.h"
 
 namespace Compiler
 {
@@ -40,7 +41,7 @@ namespace Compiler
 		int m_Flags;
 
 		/* Token Œª÷√ */
-		CharPos m_Pos;
+		Pos m_Pos;
 
 		/* Token ÷µ */
 		union
