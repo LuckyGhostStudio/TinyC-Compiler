@@ -1,5 +1,6 @@
 #include "Compiler.h"
-#include "Lexer.h"
+#include "Lexer/Lexer.h"
+#include "Parser/Parser.h"
 
 #include <stdarg.h>
 #include <iostream>
@@ -35,7 +36,7 @@ namespace Compiler
 			return CompileState::FailedWithErrors;
 		}
 
-		/* TODO: 词法分析 */
+		/* 词法分析 */
 		Lexer* lexer = new Lexer(compiler, nullptr);	// 词法分析器
 		if (!lexer) {
 			return CompileState::FailedWithErrors;
@@ -48,7 +49,13 @@ namespace Compiler
 
 		compiler->m_Tokens = lexer->GetTokens();	// 记录词法分析输出的Token序列
 
-		// TODO: 语法分析
+		/* 语法分析 */
+		Parser* parser = new Parser(compiler);	// 语法分析器
+
+		// 语法分析失败
+		if (parser->Parse() != ParseState::Successfully) {
+			return CompileState::FailedWithErrors;
+		}
 
 		// TODO: 语义解析
 

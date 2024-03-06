@@ -3,9 +3,9 @@
 #include <vector>
 #include <string>
 
-#include "Pos.h"
-#include "Token.h"
-#include "CompileProcess.h"
+#include "Lexer/Token.h"
+#include "Core/Pos.h"
+#include "Core/CompileProcess.h"
 
 namespace Compiler
 {
@@ -28,13 +28,13 @@ namespace Compiler
 		void* m_PrivateData;							// Lexer不能理解的私人数据，使用Lexer的人能够理解
 		Token m_TempToken;
 		std::string m_TokenBuffer;
-	public:
-		Pos m_CharPos;								// 字符位置信息
+
+		Pos m_CharPos;									// 字符位置信息
 		CompileProcess* m_Compiler;						// 编译器
 
 		int m_CurrentExpressionCount = 0;				// 当前表达式个数：((50)) 此表达式数有2个
 		std::string m_ParenthesesBuffer;				// 括号缓冲
-
+	public:
 		Lexer(CompileProcess* compiler, void* privateData);
 
 		// TODO: TokenBuildForString
@@ -44,6 +44,7 @@ namespace Compiler
 
 		inline void ClearTokens() { m_Tokens.clear(); }
 
+	private:
 		/// <summary>
 		/// 返回当前Token序列最后一个Token
 		/// </summary>
@@ -80,12 +81,14 @@ namespace Compiler
 		/// <returns></returns>
 		char AssertNextChar(char c);
 
+	public:
 		/// <summary>
 		/// 进行词法分析
 		/// </summary>
 		/// <returns>词法分析状态</returns>
 		LexicalAnalysisState LexicalAnalysis();
 
+	private:
 		/// <summary>
 		/// 创建 Token
 		/// </summary>

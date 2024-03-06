@@ -5,8 +5,8 @@
 #include <vector>
 
 #include "Pos.h"
-#include "Token.h"
-#include "Node.h"
+#include "Lexer/Token.h"
+#include "Parser/Node.h"
 
 namespace Compiler
 {

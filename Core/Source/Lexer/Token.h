@@ -1,7 +1,8 @@
 #pragma once
 
 #include <string>
-#include "Pos.h"
+
+#include "Core/Pos.h"
 
 namespace Compiler
 {

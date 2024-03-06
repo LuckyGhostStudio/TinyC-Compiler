@@ -1,6 +1,6 @@
 #include "Lexer.h"
-#include "Compiler.h"
-#include "Utilities.h"
+#include "Core/Compiler.h"
+#include "Core/Utilities.h"
 
 #include <cstring>
 #include <ctype.h>
